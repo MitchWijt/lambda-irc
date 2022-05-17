@@ -1,6 +1,7 @@
 exports.serverHandler = async function(event: any) {
     return {
         statusCode: 200,
-        body: JSON.stringify("Hello Server")
+        body: JSON.stringify("Hello Server"),
+        isBase64Encoded: false
     }
 }
