@@ -30,20 +30,7 @@ class MyStack extends cdk.Stack {
     }
 }
 
-
-
 function ircClientStack(scope: cdk.Stack) {
-    const ircMessageEventProducer = createLambda({
-        scope,
-        id: "ircMessageEventProducer",
-        handler: "handler",
-        entryPath: "../src/message-event-producer/handler.ts"
-    })
-    new apiGateway.LambdaRestApi(scope, "irc-server-gateway", {
-        handler: ircMessageEventProducer,
-        proxy: false
-    })
-
     const ircMessageEventHandler = createLambda({
         scope,
         id: "ircMessageEventHandler",
@@ -61,7 +48,17 @@ function ircClientStack(scope: cdk.Stack) {
 
     })
 
-    eventBus.grantPutEventsTo(ircMessageEventHandler)
+    const ircMessageEventProducer = createLambda({
+        scope,
+        id: "ircMessageEventProducer",
+        handler: "handler",
+        entryPath: "../src/message-event-producer/handler.ts"
+    })
+    new apiGateway.LambdaRestApi(scope, "irc-server-gateway", {
+        handler: ircMessageEventProducer
+    })
+
+    eventBus.grantPutEventsTo(ircMessageEventProducer)
 }
 
 function createLambda({scope, id, handler, entryPath}: lambdaParameters): NodejsFunction {
@@ -82,7 +79,6 @@ function createEventRule({scope, id, bus, pattern, targets}: eventRuleParameters
         targets: targets
     })
 }
-
 
 const app = new cdk.App()
 new MyStack(app, "irc-stack", {
