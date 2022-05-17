@@ -26,35 +26,29 @@ interface eventRuleParameters {
 class MyStack extends cdk.Stack {
     constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
-        ircServerStack(this)
         ircClientStack(this)
     }
 }
 
-function ircServerStack(scope: cdk.Stack) {
-    const ircServer = createLambda({
-        scope,
-        id: "irc-server",
-        handler: "serverHandler",
-        entryPath: "../src/socket-server-lambda/handler.ts"
-    })
 
-    const api = new apiGateway.LambdaRestApi(scope, "irc-server-gateway", {
-        handler: ircServer,
-        proxy: false
-    })
-    api.root.addMethod("GET")
-
-    const joinResource = api.root.addResource("join")
-    joinResource.addMethod("POST")
-}
 
 function ircClientStack(scope: cdk.Stack) {
-    const ircClient = createLambda({
+    const ircMessageEventProducer = createLambda({
         scope,
-        id: "irc-client",
+        id: "ircMessageEventProducer",
+        handler: "handler",
+        entryPath: "../src/message-event-producer/handler.ts"
+    })
+    new apiGateway.LambdaRestApi(scope, "irc-server-gateway", {
+        handler: ircMessageEventProducer,
+        proxy: false
+    })
+
+    const ircMessageEventHandler = createLambda({
+        scope,
+        id: "ircMessageEventHandler",
         handler: "clientHandler",
-        entryPath: "../src/socket-client-lambda/handler.ts"
+        entryPath: "../src/message-event-handler/handler.ts"
     })
 
     const eventBus = new events.EventBus(scope, "irc-eventbus")
@@ -63,11 +57,11 @@ function ircClientStack(scope: cdk.Stack) {
         id: "emit-message-rule",
         bus: eventBus,
         pattern: {source: ["newMessage"]},
-        targets: [new LambdaFunction(ircClient)]
+        targets: [new LambdaFunction(ircMessageEventHandler)]
 
     })
 
-    eventBus.grantPutEventsTo(ircClient)
+    eventBus.grantPutEventsTo(ircMessageEventHandler)
 }
 
 function createLambda({scope, id, handler, entryPath}: lambdaParameters): NodejsFunction {
