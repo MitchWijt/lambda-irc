@@ -7,6 +7,8 @@ export {
 }
 
 function convertRequestBodyToMessageEntry(data: MessageBody): EventBusParams {
+    if(!data.name || !data.message) throw new Error("Message and Name are required")
+
     return {
         Entries: [
             {
