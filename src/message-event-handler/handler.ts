@@ -4,8 +4,6 @@ exports.clientHandler = async function(event: any) {
     const eventDetails = event.detail
     const message = eventDetails.messageDetails
 
-    console.log("messageData:", message)
-
     let socket = io(event.detail.socketUrl)
     await emitMessage(socket, message)
 
