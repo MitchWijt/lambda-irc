@@ -10,6 +10,9 @@ export interface EventBusParams {
 }
 
 export interface MessageBody {
-    name: string,
-    message: string
+    messageDetails: {
+        name: string,
+        message: string
+    },
+    socketUrl: string
 }

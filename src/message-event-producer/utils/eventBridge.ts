@@ -7,12 +7,12 @@ export {
 }
 
 function convertRequestBodyToMessageEntry(data: MessageBody): EventBusParams {
-    if(!data.name || !data.message) throw new Error("Message and Name are required")
+    if(!data.messageDetails.name || !data.messageDetails.message) throw new Error("Message and Name are required")
 
     return {
         Entries: [
             {
-                Detail: JSON.stringify({name: data.name, message: data.message}),
+                Detail: JSON.stringify(data),
                 DetailType: JSON.stringify(Object.keys(data)),
                 EventBusName: BUS_NAME,
                 Source: 'newMessage'

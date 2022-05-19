@@ -1,9 +1,12 @@
 import { io } from "socket.io-client"
 
 exports.clientHandler = async function(event: any) {
-    const message = event.detail
+    const eventDetails = event.detail
+    const message = eventDetails.messageDetails
 
-    let socket = io("http://165.232.89.237:3000/")
+    console.log("messageData:", message)
+
+    let socket = io(event.detail.socketUrl)
     await emitMessage(socket, message)
 
     socket.disconnect()
